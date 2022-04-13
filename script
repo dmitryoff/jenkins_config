@@ -57,7 +57,7 @@ curl -X POST -u "$user:$password" $url/pluginManager/installPlugins \
   --data-raw "{'dynamicLoad':true,'plugins':['cloudbees-folder','antisamy-markup-formatter','build-timeout','credentials-binding','timestamper','ws-cleanup','ant','gradle','workflow-aggregator','github-branch-source','pipeline-github-lib','pipeline-stage-view','git','ssh-slaves','matrix-auth','pam-auth','ldap','email-ext','mailer','docker-plugin','ec2-fleet'],'Jenkins-Crumb':'$only_crumb'}"
 
 xx=$(cat 4)
-status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_= | cut -c -500)
+status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_= | cut -b 15172-15193)
 
 while [ "$xx" != "$status_x" ]
 do
@@ -65,9 +65,35 @@ do
   echo $status_x
   echo "Wait"
   sleep 5
-  status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_= | cut -c -500)
+  status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_= | cut -b 15172-15193)
 done
 
 echo COMPLITE
 
-{"status":"ok","data":{"jobs":[{"name":"javax-activation-api","version":"1.2.0-2","title":"JavaBeans Activation Framework (JAF) API","installStatus":"Success","requiresRestart":"false"},{"name":"javax-mail-api","version":"1.6.2-5","title":"JavaMail API","installStatus":"Success","requiresRestart":"false"},{"name":"sshd","version":"3.228.v4c9f9e652c86","title":"SSH server","installStatus":"Success","requiresRestart":"false"},{"name":"cloudbees-folder","version":"6.714.v79e858ef76a_2","title":"Fol
+sudo chmod 777 /var/lib/jenkins
+touch /var/lib/jenkins/config.xml
+sudo chmod 777 /var/lib/jenkins/config.xml
+sudo chmod 777 /var/lib/jenkins/jobs
+mkdir /var/lib/jenkins/jobs/pipeline
+sudo chmod 777 /var/lib/jenkins/jobs/pipeline
+mkdir /var/lib/jenkins/jobs/pipeline/builds
+sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds
+touch /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+touch /var/lib/jenkins/jobs/pipeline/builds/permalinks
+sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds/permalinks
+touch /var/lib/jenkins/jobs/pipeline/config.xml
+sudo chmod 777 /var/lib/jenkins/jobs/pipeline/config.xml
+
+cat config.xml > /var/lib/jenkins/config.xml
+cat job_config > /var/lib/jenkins/jobs/pipeline/config.xml
+cat permalinks > /var/lib/jenkins/jobs/pipeline/builds/permalinks
+
+sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/
+sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/
+sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/config.xml
+sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/permalinks
+
+sudo service jenkins restart
