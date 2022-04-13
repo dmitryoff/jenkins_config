@@ -1,0 +1,76 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<hudson>
+  <disabledAdministrativeMonitors/>
+  <version>2.332.2</version>
+  <numExecutors>2</numExecutors>
+  <mode>NORMAL</mode>
+  <useSecurity>true</useSecurity>
+  <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy">
+    <denyAnonymousReadAccess>true</denyAnonymousReadAccess>
+  </authorizationStrategy>
+  <securityRealm class="hudson.security.HudsonPrivateSecurityRealm">
+    <disableSignup>true</disableSignup>
+    <enableCaptcha>false</enableCaptcha>
+  </securityRealm>
+  <disableRememberMe>false</disableRememberMe>
+  <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
+  <workspaceDir>${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}</workspaceDir>
+  <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
+  <jdks/>
+  <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+  <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+  <clouds>
+    <com.amazon.jenkins.ec2fleet.EC2FleetCloud plugin="ec2-fleet@2.5.1">
+      <name>FleetCloud</name>
+      <awsCredentialsId>aws</awsCredentialsId>
+      <region>eu-west-1</region>
+      <endpoint></endpoint>
+      <fleet>EC2-Fleet-AutoScaling-group</fleet>
+      <fsRoot></fsRoot>
+      <computerConnector class="hudson.plugins.sshslaves.SSHConnector" plugin="ssh-slaves@1.806.v2253cedd3295">
+        <port>22</port>
+        <credentialsId>ec2-user</credentialsId>
+        <launchTimeoutSeconds>60</launchTimeoutSeconds>
+        <maxNumRetries>10</maxNumRetries>
+        <retryWaitTime>15</retryWaitTime>
+        <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
+        <tcpNoDelay>true</tcpNoDelay>
+      </computerConnector>
+      <privateIpUsed>false</privateIpUsed>
+      <alwaysReconnect>false</alwaysReconnect>
+      <labelString>spot-agents</labelString>
+      <idleMinutes>5</idleMinutes>
+      <minSize>1</minSize>
+      <maxSize>5</maxSize>
+      <minSpareSize>0</minSpareSize>
+      <numExecutors>2</numExecutors>
+      <addNodeOnlyIfRunning>false</addNodeOnlyIfRunning>
+      <restrictUsage>false</restrictUsage>
+      <scaleExecutorsByWeight>true</scaleExecutorsByWeight>
+      <initOnlineTimeoutSec>180</initOnlineTimeoutSec>
+      <cloudStatusIntervalSec>10</cloudStatusIntervalSec>
+      <maxTotalUses>-1</maxTotalUses>
+      <disableTaskResubmit>false</disableTaskResubmit>
+      <noDelayProvision>false</noDelayProvision>
+    </com.amazon.jenkins.ec2fleet.EC2FleetCloud>
+  </clouds>
+  <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+  <views>
+    <hudson.model.AllView>
+      <owner class="hudson" reference="../../.."/>
+      <name>all</name>
+      <filterExecutors>false</filterExecutors>
+      <filterQueue>false</filterQueue>
+      <properties class="hudson.model.View$PropertyList"/>
+    </hudson.model.AllView>
+  </views>
+  <primaryView>all</primaryView>
+  <slaveAgentPort>-1</slaveAgentPort>
+  <label></label>
+  <crumbIssuer class="hudson.security.csrf.DefaultCrumbIssuer">
+    <excludeClientIPFromCrumb>false</excludeClientIPFromCrumb>
+  </crumbIssuer>
+  <nodeProperties/>
+  <globalNodeProperties/>
+  <nodeRenameMigrationNeeded>false</nodeRenameMigrationNeeded>
+</hudson>
