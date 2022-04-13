@@ -1,101 +1,124 @@
 #!/bin/bash
 
-sudo apt update
-sudo apt install openjdk-11-jre -y
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
-  /usr/share/keyrings/jenkins-keyring.asc > /dev/null | echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
-  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
-  /etc/apt/sources.list.d/jenkins.list > /dev/null
-sudo apt-get update
-sudo apt-get install jenkins -y
+function install_jenkins {
+  sudo apt update
+  sudo apt install openjdk-11-jre -y
+  curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo tee \
+    /usr/share/keyrings/jenkins-keyring.asc > /dev/null | echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+    https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+    /etc/apt/sources.list.d/jenkins.list > /dev/null
+  sudo apt-get update
+  sudo apt-get install jenkins -y
+}
 
-url=http://0.0.0.0:8080
-password=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword)
+function create_user_jenkins {
+  url=http://0.0.0.0:8080
+  password=$(sudo cat /var/lib/jenkins/secrets/initialAdminPassword)
 
-# NEW ADMIN CREDENTIALS URL ENCODED USING PYTHON
-username="user"
-new_password="password"
-fullname="full name"
-email="hello@world.com"
+  # NEW ADMIN CREDENTIALS URL 
+  username="user"
+  new_password="password"
+  fullname="full name"
+  email="hello@world.com"
 
 
-# GET THE CRUMB AND COOKIE
-cookie_jar="$(mktemp)"
-full_crumb=$(curl -u "admin:$password" --cookie-jar "$cookie_jar" $url/crumbIssuer/api/xml?xpath=concat\(//crumbRequestField,%22:%22,//crumb\))
-arr_crumb=(${full_crumb//:/ })
-only_crumb=$(echo ${arr_crumb[1]})
+  # GET THE CRUMB AND COOKIE
+  cookie_jar="$(mktemp)"
+  full_crumb=$(curl -u "admin:$password" --cookie-jar "$cookie_jar" $url/crumbIssuer/api/xml?xpath=concat\(//crumbRequestField,%22:%22,//crumb\))
+  arr_crumb=(${full_crumb//:/ })
+  only_crumb=$(echo ${arr_crumb[1]})
 
-# MAKE THE REQUEST TO CREATE AN ADMIN USER
-curl -X POST -u "admin:$password" $url/setupWizard/createAdminUser \
-        -H "Connection: keep-alive" \
-        -H "Accept: application/json, text/javascript" \
-        -H "X-Requested-With: XMLHttpRequest" \
-        -H "$full_crumb" \
-        -H "Content-Type: application/x-www-form-urlencoded" \
-        --cookie $cookie_jar \
-        --data-raw "username=$username&password1=$new_password&password2=$new_password&fullname=$fullname&email=$email&Jenkins-Crumb=$only_crumb&json=%7B%22username%22%3A%20%22$username%22%2C%20%22password1%22%3A%20%22$new_password%22%2C%20%22%24redact%22%3A%20%5B%22password1%22%2C%20%22password2%22%5D%2C%20%22password2%22%3A%20%22$new_password%22%2C%20%22fullname%22%3A%20%22$fullname%22%2C%20%22email%22%3A%20%22$email%22%2C%20%22Jenkins-Crumb%22%3A%20%22$only_crumb%22%7D&core%3Aapply=&Submit=Save&json=%7B%22username%22%3A%20%22$username%22%2C%20%22password1%22%3A%20%22$new_password%22%2C%20%22%24redact%22%3A%20%5B%22password1%22%2C%20%22password2%22%5D%2C%20%22password2%22%3A%20%22$new_password%22%2C%20%22fullname%22%3A%20%22$fullname%22%2C%20%22email%22%3A%20%22$email%22%2C%20%22Jenkins-Crumb%22%3A%20%22$only_crumb%22%7D"
+  # MAKE THE REQUEST TO CREATE AN ADMIN USER
+  curl -X POST -u "admin:$password" $url/setupWizard/createAdminUser \
+          -H "Connection: keep-alive" \
+          -H "Accept: application/json, text/javascript" \
+          -H "X-Requested-With: XMLHttpRequest" \
+          -H "$full_crumb" \
+          -H "Content-Type: application/x-www-form-urlencoded" \
+          --cookie $cookie_jar \
+          --data-raw "username=$username&password1=$new_password&password2=$new_password&fullname=$fullname&email=$email&Jenkins-Crumb=$only_crumb&json=%7B%22username%22%3A%20%22$username%22%2C%20%22password1%22%3A%20%22$new_password%22%2C%20%22%24redact%22%3A%20%5B%22password1%22%2C%20%22password2%22%5D%2C%20%22password2%22%3A%20%22$new_password%22%2C%20%22fullname%22%3A%20%22$fullname%22%2C%20%22email%22%3A%20%22$email%22%2C%20%22Jenkins-Crumb%22%3A%20%22$only_crumb%22%7D&core%3Aapply=&Submit=Save&json=%7B%22username%22%3A%20%22$username%22%2C%20%22password1%22%3A%20%22$new_password%22%2C%20%22%24redact%22%3A%20%5B%22password1%22%2C%20%22password2%22%5D%2C%20%22password2%22%3A%20%22$new_password%22%2C%20%22fullname%22%3A%20%22$fullname%22%2C%20%22email%22%3A%20%22$email%22%2C%20%22Jenkins-Crumb%22%3A%20%22$only_crumb%22%7D"
+}
 
-url=http://0.0.0.0:8080
+function install_plugins {
+  url=http://0.0.0.0:8080
 
-user=user
-password=password
+  user=user
+  password=password
 
-cookie_jar="$(mktemp)"
-full_crumb=$(curl -u "$user:$password" --cookie-jar "$cookie_jar" $url/crumbIssuer/api/xml?xpath=concat\(//crumbRequestField,%22:%22,//crumb\))
-arr_crumb=(${full_crumb//:/ })
-only_crumb=$(echo ${arr_crumb[1]})
+  cookie_jar="$(mktemp)"
+  full_crumb=$(curl -u "$user:$password" --cookie-jar "$cookie_jar" $url/crumbIssuer/api/xml?xpath=concat\(//crumbRequestField,%22:%22,//crumb\))
+  arr_crumb=(${full_crumb//:/ })
+  only_crumb=$(echo ${arr_crumb[1]})
 
-# MAKE THE REQUEST TO DOWNLOAD AND INSTALL REQUIRED MODULES
-curl -X POST -u "$user:$password" $url/pluginManager/installPlugins \
-  -H 'Connection: keep-alive' \
-  -H 'Accept: application/json, text/javascript, */*; q=0.01' \
-  -H 'X-Requested-With: XMLHttpRequest' \
-  -H "$full_crumb" \
-  -H 'Content-Type: application/json' \
-  -H 'Accept-Language: en,en-US;q=0.9,it;q=0.8' \
-  --cookie $cookie_jar \
-  --data-raw "{'dynamicLoad':true,'plugins':['cloudbees-folder','antisamy-markup-formatter','build-timeout','credentials-binding','timestamper','ws-cleanup','ant','gradle','workflow-aggregator','github-branch-source','pipeline-github-lib','pipeline-stage-view','git','ssh-slaves','matrix-auth','pam-auth','ldap','email-ext','mailer','docker-plugin','ec2-fleet'],'Jenkins-Crumb':'$only_crumb'}"
+  # MAKE THE REQUEST TO DOWNLOAD AND INSTALL REQUIRED MODULES
+  curl -X POST -u "$user:$password" $url/pluginManager/installPlugins \
+    -H 'Connection: keep-alive' \
+    -H 'Accept: application/json, text/javascript, */*; q=0.01' \
+    -H 'X-Requested-With: XMLHttpRequest' \
+    -H "$full_crumb" \
+    -H 'Content-Type: application/json' \
+    -H 'Accept-Language: en,en-US;q=0.9,it;q=0.8' \
+    --cookie $cookie_jar \
+    --data-raw "{'dynamicLoad':true,'plugins':['cloudbees-folder','antisamy-markup-formatter','build-timeout','credentials-binding','timestamper','ws-cleanup','ant','gradle','workflow-aggregator','github-branch-source','pipeline-github-lib','pipeline-stage-view','git','ssh-slaves','matrix-auth','pam-auth','ldap','email-ext','mailer','docker-plugin','docker-workflow'],'Jenkins-Crumb':'$only_crumb'}"
 
-xx=$(cat 4)
-status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
-reverse_status=${status_x: -22}
+    xx=$(cat 4)
+    status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
+    reverse_status=${status_x: -22}
 
-while [ "$xx" != "$reverse_status" ]
-do
-  echo $xx
-  echo $reverse_status
-  echo "Wait"
-  sleep 5
-  status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
-  reverse_status=${status_x: -22}
-done
+    while [ "$xx" != "$reverse_status" ]
+    do
+      echo $xx
+      echo $reverse_status
+      echo "Wait"
+      sleep 5
+      status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
+      reverse_status=${status_x: -22}
+    done
 
-echo COMPLITE
+    echo COMPLITE
+}
 
-sudo chmod 777 /var/lib/jenkins
-touch /var/lib/jenkins/config.xml
-sudo chmod 777 /var/lib/jenkins/config.xml
-sudo chmod 777 /var/lib/jenkins/jobs
-mkdir /var/lib/jenkins/jobs/pipeline
-sudo chmod 777 /var/lib/jenkins/jobs/pipeline
-mkdir /var/lib/jenkins/jobs/pipeline/builds
-sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds
-touch /var/lib/jenkins/jobs/pipeline/builds/legacyIds
-touch /var/lib/jenkins/jobs/pipeline/builds/permalinks
-sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds/legacyIds
-sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds/permalinks
-touch /var/lib/jenkins/jobs/pipeline/config.xml
-sudo chmod 777 /var/lib/jenkins/jobs/pipeline/config.xml
+function get_permission {
+  sudo chmod 777 /var/lib/jenkins
+  touch /var/lib/jenkins/config.xml
+  sudo chmod 777 /var/lib/jenkins/config.xml
+  sudo chmod 777 /var/lib/jenkins/jobs
+  mkdir /var/lib/jenkins/jobs/pipeline
+  sudo chmod 777 /var/lib/jenkins/jobs/pipeline
+  mkdir /var/lib/jenkins/jobs/pipeline/builds
+  sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds
+  touch /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+  touch /var/lib/jenkins/jobs/pipeline/builds/permalinks
+  sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+  sudo chmod 777 /var/lib/jenkins/jobs/pipeline/builds/permalinks
+  touch /var/lib/jenkins/jobs/pipeline/config.xml
+  sudo chmod 777 /var/lib/jenkins/jobs/pipeline/config.xml
+}
 
-cat config.xml > /var/lib/jenkins/config.xml
-cat job_config > /var/lib/jenkins/jobs/pipeline/config.xml
-cat permalinks > /var/lib/jenkins/jobs/pipeline/builds/permalinks
+function config_jenkins {
+  cat config.xml > /var/lib/jenkins/config.xml
+}
 
-sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/
-sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/
-sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/config.xml
-sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/legacyIds
-sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/legacyIds
-sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/permalinks
+function jobs_parametrs {
+  cat job_config > /var/lib/jenkins/jobs/pipeline/config.xml
+  cat permalinks > /var/lib/jenkins/jobs/pipeline/builds/permalinks
+  
+  sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/
+  sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/
+  sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/config.xml
+  sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+  sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/legacyIds
+  sudo chown jenkins:jenkins /var/lib/jenkins/jobs/pipeline/builds/permalinks
+}
 
-sudo service jenkins restart
+function restart_jenkins {
+  sudo service jenkins restart
+}
+
+install_jenkins
+create_user_jenkins
+install_plugins
+get_permission
+config_jenkins
+jobs_parametrs
+restart_jenkins
