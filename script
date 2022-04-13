@@ -57,15 +57,17 @@ curl -X POST -u "$user:$password" $url/pluginManager/installPlugins \
   --data-raw "{'dynamicLoad':true,'plugins':['cloudbees-folder','antisamy-markup-formatter','build-timeout','credentials-binding','timestamper','ws-cleanup','ant','gradle','workflow-aggregator','github-branch-source','pipeline-github-lib','pipeline-stage-view','git','ssh-slaves','matrix-auth','pam-auth','ldap','email-ext','mailer','docker-plugin','ec2-fleet'],'Jenkins-Crumb':'$only_crumb'}"
 
 xx=$(cat 4)
-status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_= | cut -b 15172-15193)
+status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
+reverse_status=${status_x: -22}
 
-while [ "$xx" != "$status_x" ]
+while [ "$xx" != "$reverse_status" ]
 do
   echo $xx
-  echo $status_x
+  echo $reverse_status
   echo "Wait"
   sleep 5
-  status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_= | cut -b 15172-15193)
+  status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
+  reverse_status=${status_x: -22}
 done
 
 echo COMPLITE
