@@ -61,18 +61,18 @@ function install_plugins {
     --cookie $cookie_jar \
     --data-raw "{'dynamicLoad':true,'plugins':['cloudbees-folder','antisamy-markup-formatter','build-timeout','credentials-binding','timestamper','ws-cleanup','ant','gradle','workflow-aggregator','github-branch-source','pipeline-github-lib','pipeline-stage-view','git','ssh-slaves','matrix-auth','pam-auth','ldap','email-ext','mailer','docker-plugin','docker-workflow'],'Jenkins-Crumb':'$only_crumb'}"
 
-    xx=$(cat 4)
-    status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
-    reverse_status=${status_x: -22}
+    end_status=$(cat curent_status)
+    curently_status=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
+    reverse_curently_status=${curently_status: -22}
 
-    while [ "$xx" != "$reverse_status" ]
+    while [ "$end_status" != "$reverse_curently_status" ]
     do
-      echo $xx
-      echo $reverse_status
+      echo $end_status
+      echo $reverse_curently_status
       echo "Wait"
       sleep 5
-      status_x=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
-      reverse_status=${status_x: -22}
+      curently_status=$(curl -u user:password http://0.0.0.0:8080/updateCenter/installStatus?_=)
+      reverse_curently_status=${curently_status: -22}
     done
 
     echo COMPLITE
